@@ -272,20 +272,16 @@ async function executeBuildWithTimeout(buildCmd: {command: string; args: string[
     }
   });
 
-  if (timeoutMinutes > 0) {
-    const timeoutPromise = new Promise<void>((_, reject) => {
-      setTimeout(
-        () => {
-          reject(new Error(`Build attempt timed out after ${timeoutMinutes} minutes`));
-        },
-        timeoutMinutes * 60 * 1000
-      );
-    });
-
-    await Promise.race([buildPromise, timeoutPromise]);
-  } else {
-    await buildPromise;
+  if (timeoutMinutes <= 0) {
+    return buildPromise;
   }
+
+  let timeoutHandle: NodeJS.Timeout;
+  const timeoutPromise = new Promise<void>((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(`Build attempt timed out after ${timeoutMinutes} minutes`)), timeoutMinutes * 60 * 1000);
+  });
+
+  return Promise.race([buildPromise, timeoutPromise]).finally(() => clearTimeout(timeoutHandle));
 }
 
 async function buildRef(toolkit: Toolkit, since: Date, builder?: string): Promise<string> {
