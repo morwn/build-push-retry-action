@@ -97,7 +97,7 @@ actionsToolkit.run(
     core.debug(`buildCmd.command: ${buildCmd.command}`);
     core.debug(`buildCmd.args: ${JSON.stringify(buildCmd.args)}`);
 
-    await executeBuildWithRetry(buildCmd, inputs, toolkit);
+    await executeBuildWithRetry(buildCmd, inputs);
 
     const imageID = toolkit.buildxBuild.resolveImageID();
     const metadata = toolkit.buildxBuild.resolveMetadata();
@@ -216,7 +216,7 @@ actionsToolkit.run(
   }
 );
 
-async function executeBuildWithRetry(buildCmd: {command: string; args: string[]}, inputs: context.Inputs, toolkit: Toolkit): Promise<void> {
+async function executeBuildWithRetry(buildCmd: {command: string; args: string[]}, inputs: context.Inputs): Promise<void> {
   const maxAttempts = inputs['max-attempts'];
   const retryWaitSeconds = inputs['retry-wait-seconds'];
   const timeoutMinutes = inputs['timeout-minutes'];

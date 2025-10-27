@@ -879,6 +879,46 @@ ANOTHER_SECRET=ANOTHER_SECRET_ENV`]
   );
 });
 
+describe('getInputs', () => {
+  beforeEach(() => {
+    process.env = Object.keys(process.env).reduce((object, key) => {
+      if (!key.startsWith('INPUT_')) {
+        object[key] = process.env[key];
+      }
+      return object;
+    }, {});
+  });
+
+  test('should parse retry inputs with default values', async () => {
+    setInput('context', '.');
+    setInput('load', 'false');
+    setInput('no-cache', 'false');
+    setInput('push', 'false');
+    setInput('pull', 'false');
+
+    const inputs = await context.getInputs();
+    expect(inputs['max-attempts']).toBe(1);
+    expect(inputs['retry-wait-seconds']).toBe(0);
+    expect(inputs['timeout-minutes']).toBe(0);
+  });
+
+  test('should parse retry inputs with custom values', async () => {
+    setInput('context', '.');
+    setInput('max-attempts', '3');
+    setInput('retry-wait-seconds', '30');
+    setInput('timeout-minutes', '10');
+    setInput('load', 'false');
+    setInput('no-cache', 'false');
+    setInput('push', 'false');
+    setInput('pull', 'false');
+
+    const inputs = await context.getInputs();
+    expect(inputs['max-attempts']).toBe(3);
+    expect(inputs['retry-wait-seconds']).toBe(30);
+    expect(inputs['timeout-minutes']).toBe(10);
+  });
+});
+
 // See: https://github.com/actions/toolkit/blob/a1b068ec31a042ff1e10a522d8fdf0b8869d53ca/packages/core/src/core.ts#L89
 function getInputName(name: string): string {
   return `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
